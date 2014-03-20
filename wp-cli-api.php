@@ -1,6 +1,6 @@
 <?php
 /**
- * Invoke WP-CLI on another server via SSH from local machine
+ * Invoke WP-CLI on another server via API from local machine
  *
  * @package  wp-cli
  * @author   Jonathan Bardo <jonathan.bardo@x-team.com>
@@ -33,9 +33,9 @@ if ( ! defined( 'WP_CLI' ) ) {
 }
 
 /**
- * Implements ssh command.
+ * Implements api command.
  */
-class WP_CLI_SSH_Command extends WP_CLI_Command {
+class WP_CLI_API_Command extends WP_CLI_Command {
 
 	private $global_config_path, $project_config_path;
 
@@ -52,7 +52,7 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp ssh plugin status --host=vagrant
+	 *     wp api plugin status --host=vagrant
 	 *
 	 * @when before_wp_load
 	 */
@@ -93,8 +93,8 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 			}
 		}
 
-		// Remove duplicated ssh when there is a forgotten `alias wp="wp ssh --host=vagrant"`
-		while ( ! empty( $cli_args ) && $cli_args[0] === 'ssh' ) {
+		// Remove duplicated api when there is a forgotten `alias wp="wp api --host=vagrant"`
+		while ( ! empty( $cli_args ) && $cli_args[0] === 'api' ) {
 			array_shift( $cli_args );
 		}
 
@@ -106,20 +106,20 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 			passthru( $cmd, $exit_code );
 			exit( $exit_code );
 		} else {
-			$ssh_config = $assoc_args[$target_server];
+			$api_config = $assoc_args[$target_server];
 		}
 
 		// Check if command is valid or disabled
 		// Will output an error if the command has been disabled
-		$r = $this->check_disabled_commands( array_values( $cli_args ), $ssh_config );
+		$r = $this->check_disabled_commands( array_values( $cli_args ), $api_config );
 
 		// Add default url from config is one is not set
-		if ( ! $has_url && ! empty( $ssh_config['url'] ) ) {
-			$cli_args[] = '--url=' . $ssh_config['url'];
+		if ( ! $has_url && ! empty( $api_config['url'] ) ) {
+			$cli_args[] = '--url=' . $api_config['url'];
 		}
 
-		if ( ! $path && ! empty( $ssh_config['path'] ) ) {
-			$path = $ssh_config['path'];
+		if ( ! $path && ! empty( $api_config['path'] ) ) {
+			$path = $api_config['path'];
 		} else {
 			WP_CLI::error( 'No path is specified' );
 		}
@@ -149,11 +149,11 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 		// Append WP-CLI args to command
 		$cmd .= ' ' . join( ' ', array_map( 'escapeshellarg', $cli_args ) );
 
-		// Escape command argument for each level of SSH tunnel inception, and pass along TTY state
+		// Escape command argument for each level of API tunnel inception, and pass along TTY state
 		$is_tty       = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
-		$cmd_prefix   = $ssh_config['cmd'];
+		$cmd_prefix   = $api_config['cmd'];
 		$cmd_prefix   = str_replace( '%pseudotty%', ( $is_tty ? '-t' : '-T' ), $cmd_prefix );
-		$tunnel_depth = preg_match_all( '/(^|\s)(ssh|slogin)\s/', $cmd_prefix );
+		$tunnel_depth = preg_match_all( '/(^|\s)(api|slogin)\s/', $cmd_prefix );
 		for ( $i = 0; $i < $tunnel_depth; $i += 1 ) {
 			$cmd = escapeshellarg( $cmd );
 		}
@@ -162,7 +162,7 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 		$cmd = str_replace( '%cmd%', $cmd, $cmd_prefix );
 
 		if ( $is_tty ) { // they probably want this to be --quiet
-			WP_CLI::log( sprintf( 'Connecting via ssh to host: %s', $target_server ) );
+			WP_CLI::log( sprintf( 'Connecting via api to host: %s', $target_server ) );
 		}
 
 		// Execute WP-CLI on remote server
@@ -176,17 +176,17 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 	 * Check if the command run is disabled on local config
 	 *
 	 * @param array $args
-	 * @param array $ssh_config
+	 * @param array $api_config
 	 *
 	 * @return void|error
 	 */
-	private function check_disabled_commands( $args, $ssh_config ) {
+	private function check_disabled_commands( $args, $api_config ) {
 		// Check if the currently runned command is disabled on remote server
 		// Also check if we have a valid command
-		if ( ! isset( $ssh_config['disabled_commands'] ) ) {
+		if ( ! isset( $api_config['disabled_commands'] ) ) {
 			return;
 		} else {
-			$disabled_commands = $ssh_config['disabled_commands'];
+			$disabled_commands = $api_config['disabled_commands'];
 		}
 
 		$cmd_path = array();
@@ -209,4 +209,4 @@ class WP_CLI_SSH_Command extends WP_CLI_Command {
 
 }
 
-WP_CLI::add_command( 'ssh', 'WP_CLI_SSH_Command' );
+WP_CLI::add_command( 'api', 'WP_CLI_API_Command' );
