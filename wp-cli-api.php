@@ -109,10 +109,6 @@ class WP_CLI_API_Command extends WP_CLI_Command {
 			$api_config = $assoc_args[$target_server];
 		}
 
-		// Check if command is valid or disabled
-		// Will output an error if the command has been disabled
-		$r = $this->check_disabled_commands( array_values( $cli_args ), $api_config );
-
 		// Add default url from config is one is not set
 		if ( ! $has_url && ! empty( $api_config['url'] ) ) {
 			$cli_args[] = '--url=' . $api_config['url'];
@@ -150,63 +146,19 @@ class WP_CLI_API_Command extends WP_CLI_Command {
 		$cmd .= ' ' . join( ' ', array_map( 'escapeshellarg', $cli_args ) );
 
 		// Escape command argument for each level of API tunnel inception, and pass along TTY state
-		$is_tty       = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
 		$cmd_prefix   = $api_config['cmd'];
-		$cmd_prefix   = str_replace( '%pseudotty%', ( $is_tty ? '-t' : '-T' ), $cmd_prefix );
-		$tunnel_depth = preg_match_all( '/(^|\s)(api|slogin)\s/', $cmd_prefix );
-		for ( $i = 0; $i < $tunnel_depth; $i += 1 ) {
-			$cmd = escapeshellarg( $cmd );
-		}
 
 		// Replace placeholder with command
 		$cmd = str_replace( '%cmd%', $cmd, $cmd_prefix );
 
-		if ( $is_tty ) { // they probably want this to be --quiet
-			WP_CLI::log( sprintf( 'Connecting via api to host: %s', $target_server ) );
-		}
+        WP_CLI::info('cmd: ' . $cmd);
 
 		// Execute WP-CLI on remote server
-		passthru( $cmd, $exit_code );
+		// passthru( $cmd, $exit_code );
 
 		// Prevent local machine's WP-CLI from executing further
 		exit( $exit_code );
 	}
-
-	/**
-	 * Check if the command run is disabled on local config
-	 *
-	 * @param array $args
-	 * @param array $api_config
-	 *
-	 * @return void|error
-	 */
-	private function check_disabled_commands( $args, $api_config ) {
-		// Check if the currently runned command is disabled on remote server
-		// Also check if we have a valid command
-		if ( ! isset( $api_config['disabled_commands'] ) ) {
-			return;
-		} else {
-			$disabled_commands = $api_config['disabled_commands'];
-		}
-
-		$cmd_path = array();
-
-		while ( ! empty( $args ) ) {
-			$cmd_path[] = array_shift($args);
-			$full_name = implode( ' ', $cmd_path );
-
-			// We don't check if the command exist as we might have community package installed on remote server an not local
-			if ( in_array( $full_name, $disabled_commands ) ) {
-				WP_CLI::error(
-					sprintf(
-						"The '%s' command has been disabled from the config file.",
-						$full_name
-					)
-				);
-			}
-		}
-	}
-
 }
 
 WP_CLI::add_command( 'api', 'WP_CLI_API_Command' );
