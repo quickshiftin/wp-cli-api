@@ -65,6 +65,12 @@ class WP_CLI_API_Command extends WP_CLI_Command
 	public function __invoke($args, $assoc_args)
     {
         //-------------------------------------------------------------------
+        // Bail right away if the xmlrpc encoder is missing
+        //-------------------------------------------------------------------
+        if(!function_exists('xmlrpc_encode_request'))
+            WP_CLI::error('function xmlrpc_encode_request DNE');
+
+        //-------------------------------------------------------------------
         // Load the arguments
         //-------------------------------------------------------------------
         $sHost    = $args[0];
@@ -106,7 +112,6 @@ class WP_CLI_API_Command extends WP_CLI_Command
 
         // Run the command on the remote box
         $aResults = $this->_runCommand($sHost, $sCommand, $sSubCommand, $aArgs);
-
         // Inspect the results for the correct format
         if(!isset($aResults['output']) || !isset($aResults['return_code'])) {
             WP_CLI::error('Unexpected results from ' . $sHost);
@@ -130,12 +135,11 @@ class WP_CLI_API_Command extends WP_CLI_Command
             'arguments'   => $sArgs,
         );
 
-        $params  = array(0, $this->_sApiUser, $this->_sApiPass, $content, true);
+        $params  = array($this->_sApiUser, $this->_sApiPass, $content, true);
         $request = xmlrpc_encode_request('wp.cli', $params);
         $ch      = curl_init();
 
         curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-
         // XXX Hardcoded protocol...
         //     Let's make this something we can set in the config on a per-host basis..
         curl_setopt($ch, CURLOPT_URL, 'http://' . $sHost . '/xmlrpc.php');
@@ -144,7 +148,7 @@ class WP_CLI_API_Command extends WP_CLI_Command
         $results = curl_exec($ch);
         curl_close($ch);
 
-        return $results;
+        return xmlrpc_decode($results);
     }
 }
 
