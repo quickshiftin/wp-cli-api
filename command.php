@@ -28,7 +28,7 @@
  * Bail if not a WP-CLI request
  */
 if(!defined('WP_CLI'))
-        return;
+    return;
 
 /**
  * Implements api command.
@@ -59,8 +59,6 @@ class WP_CLI_API_Command extends WP_CLI_Command
 	 *
 	 *     wp api mysite.com plugin status --host=vagrant
      *     wp api mysite.com option add my_option
-	 *
-	 * @when before_wp_load
 	 */
 	public function __invoke($args, $assoc_args)
     {
@@ -80,43 +78,68 @@ class WP_CLI_API_Command extends WP_CLI_Command
         if(isset($args[2]))
             $sSubCommand = $args[2];
 
+        // Load the args if there are any
         $aArgs = array();
         if(isset($assoc_args['args']) && !empty($assoc_args['args']))
             $aArgs = $assoc_args['args'];
 
         //------------------------------------------------------------
-        // Load configuration from config.yml using the provided host.
+        // Inspect the wp cli config to see if the user would like to 
+        // load the remote site configuration from the local
+        // wp-config.php file or wp cli's config.yml locally.
         //------------------------------------------------------------
-		if(!isset($assoc_args[$sHost])) {
-            WP_CLI::error("Host $sHost is not defined in config.yml");
-            exit(1);
-		}
+        if(isset($assoc_args['use-local-config']) &&
+            //------------------------------------------------------------
+            // Load configuration from wp-config.php of the local install.
+            //------------------------------------------------------------
+            $assoc_args['use-local-config'] === true) {
 
-        // Load the config
-        $api_config = $assoc_args[$sHost];
+            $sApiCreds = shell_exec(
+                            'php ' . __DIR__ . '/read-wp-config.php ' .
+                            escapeshellarg($sHost));
+            $aApiCreds = unserialize($sApiCreds);
+            if(!isset($aApiCreds['user']))
+                WP_CLI::Error(
+                    "Environment $sHost is missing a WP_CLI_API_USER constant");
 
-        // Bail if api user not defined
-        if(!isset($api_config['user'])) {
-            WP_CLI::error("Host $sHost is missing a user entry for the api in config.yml");
-            exit(2);
+            if(!isset($aApiCreds['pass']))
+                WP_CLI::Error(
+                    "Environment $sHost is missing a WP_CLI_API_PASS constant");
+
+            if(!isset($aApiCreds['url']))
+                WP_CLI::Error(
+                    "Environment $sHost is missing a WP_CLI_API_URL constant");
+
+            $this->_sApiUser = $aApiCreds['user'];
+            $this->_sApiPass = $aApiCreds['pass'];
+            $sHost           = $aApiCreds['url'];
+        } else {
+            //------------------------------------------------------------
+            // Load configuration from config.yml using the provided host.
+            //------------------------------------------------------------
+            if(!isset($assoc_args[$sHost]))
+                WP_CLI::error("Host $sHost is not defined in config.yml");
+
+            // Load the config
+            $api_config = $assoc_args[$sHost];
+
+            // Bail if api user not defined
+            if(!isset($api_config['user']))
+                WP_CLI::error("Host $sHost is missing a user entry for the api in config.yml");
+
+            // Bail if api pass not defined
+            if(!isset($api_config['pass']))
+                WP_CLI::error("Host $sHost is missing a pass entry for the api in config.yml");
+
+            $this->_sApiUser = $api_config['user'];
+            $this->_sApiPass = $api_config['pass'];
         }
-
-        // Bail if api pass not defined
-        if(!isset($api_config['pass'])) {
-            WP_CLI::error("Host $sHost is missing a pass entry for the api in config.yml");
-            exit(3);
-        }
-
-        $this->_sApiUser = $api_config['user'];
-        $this->_sApiPass = $api_config['pass'];
 
         // Run the command on the remote box
         $aResults = $this->_runCommand($sHost, $sCommand, $sSubCommand, $aArgs);
         // Inspect the results for the correct format
-        if(!isset($aResults['output']) || !isset($aResults['return_code'])) {
+        if(!isset($aResults['output']) || !isset($aResults['return_code']))
             WP_CLI::error('Unexpected results from ' . $sHost);
-            exit(4);
-        }
 
         // Display any output from the rmeote box
         WP_CLI::log($aResults['output']);
@@ -126,6 +149,10 @@ class WP_CLI_API_Command extends WP_CLI_Command
             exit(5);
 	}
 
+    /**
+     * Run the command on a remote Wordpress site using the Wordpress API.
+     * @note The wp-cli-api plugin must be installed on the target Wordpress site.
+     */
     private function _runCommand(
         $sHost, $sCommand, $sSubCommand='', $sArgs=''
     ) {
@@ -140,11 +167,8 @@ class WP_CLI_API_Command extends WP_CLI_Command
         $ch      = curl_init();
 
         curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-        // XXX Hardcoded protocol...
-        //     Let's make this something we can set in the config on a per-host basis..
-        curl_setopt($ch, CURLOPT_URL, 'http://' . $sHost . '/xmlrpc.php');
+        curl_setopt($ch, CURLOPT_URL, $sHost . '/xmlrpc.php');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-
         $results = curl_exec($ch);
         curl_close($ch);
 
