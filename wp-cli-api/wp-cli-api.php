@@ -40,7 +40,7 @@ function wp_cli_api_callback($args)
 
     // Look for the wp executable on disk, bail if not found
     $wp_exec = exec('which wp', $care, $r);
-    if($return_code > 0)
+    if($r > 0)
         return false;
 
     // Append the sub command to the total command to execute,
