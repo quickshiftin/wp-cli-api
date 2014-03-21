@@ -1,2 +1,2 @@
 #!/bin/bash
-zip -j wp-cli-api plugin/*
+zip -r wp-cli-api wp-cli-api
