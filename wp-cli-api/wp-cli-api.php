@@ -41,7 +41,11 @@ function wp_cli_api_callback($args)
     // Look for the wp executable on disk, bail if not found
     $wp_exec = exec('which wp', $care, $r);
     if($r > 0)
-        return false;
+        return array(
+            'command'     => '',
+            'output'      => 'Remote system missing wp install.',
+            'return_code' => 1
+        );
 
     // Append the sub command to the total command to execute,
     // if one has bee provided
