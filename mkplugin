@@ -1,2 +1,5 @@
 #!/bin/bash
+if [ -f wp-cli-api.zip ]; then
+    rm wp-cli-api.zip 
+fi
 zip -r wp-cli-api wp-cli-api
