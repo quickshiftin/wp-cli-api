@@ -1,5 +1,15 @@
 #!/bin/bash
-if [ -f wp-cli-api.zip ]; then
-    rm wp-cli-api.zip 
+
+if [[ -f wp-cli-api*.zip ]]; then
+    rm wp-cli-api*.zip
 fi
+
+mkdir wp-cli-api
+cp *.php wp-cli-api
 zip -r wp-cli-api wp-cli-api
+rm -rf wp-cli-api
+
+version="$1"
+if [ ! -z "$version" ]; then
+    mv wp-cli-api.zip wp-cli-api-"$version".zip
+fi
