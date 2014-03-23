@@ -9,7 +9,7 @@ remotely.
 
 WP-CLI API operates against your WordPress' API. Install the wp-cli-api plugin on the WordPress site you want to control, and install the `api`  and/or `yapi` comamnds in WP-CLI on the computer you want to control remote sites with.
 
-## WP-CLI-based configuration and the `yapi` command
+## config.yml-based configuration and the `yapi` command
 
 Assuming you have a clone of your WordPress install on your machine, add an `api` section
 to your `wp-cli.yml` config file. In this section you define the remote servers which 
