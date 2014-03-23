@@ -58,12 +58,6 @@ wpConfigure('site', array(
     'staging:production' => array(
         'WP_CLI_API_URL' => 'http://staging.livesite.com',
     ),
-
-    //------------------------------------------------------------
-    // development configuration loaded from wp-config-local.php
-    // Copy from wp-config-local-example.php to get
-    // started.
-    //------------------------------------------------------------
 ));
 ```
 **wp-config-local.php**
