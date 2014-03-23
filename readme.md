@@ -42,7 +42,7 @@ api:
     pass: api-pass
     url: 'http://livesite.local'
 ```
-## config.php-based configuration and the `api` command
+## wp-config.php-based configuration and the `api` command
 
 You can alternatively configure the command with `wp-config.php` from WordPress. To do this, you must run the `wp api` command from the WordPress installation directory. You must also install the [wpConfigure plugin](http://quickshiftin.com/software/wp-configure) first. Then your `wp-config.php` file might look something like this
 **wp-config.php**
