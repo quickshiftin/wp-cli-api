@@ -48,7 +48,7 @@ You can alternatively configure the command with `wp-config.php` from WordPress.
 **wp-config.php**
 ```php
 require_once __DIR__ . '/wpCofigure.php';
-wpConfigure('site, array(
+wpConfigure('site', array(
     'production' => array(
         'WP_CLI_API_USER' => 'api-user',
         'WP_CLI_API_PASS' => 'api-pass',
@@ -67,11 +67,12 @@ wpConfigure('site, array(
 ));
 ```
 **wp-config-local.php**
+```php
 return array(
     'development:staging' => array(
         'WP_CLI_API_URL' => 'http://livesite.local'
 ));
-
+```
 Remember, you need to be in the webroot of your WordPress install for this command to work.
 ```bash
 wp api staging option get --args='siteurl'
@@ -81,15 +82,7 @@ wp api staging option get --args='siteurl'
 
 ## Installation
 
-Note that you do not necessarily need WP-CLI installed on your server to use this. If the `wp` command is not
-recognized on the server, the script will download the `wp-cli.phar` file and use that at runtime.
+You need to have WP-CLI and the wp-api-cli plugin installed on the site you want to control. Then you need to install the `api` and/or `yapi` command on the machine you want to control from.
 
-Installing WP-CLI-API on your machine can be done either by installation as a Composer package,
-or by adding a `require` config to a `wp-cli.local.yml`.
 
-## Alternatives
-
- * [vaapi](https://github.com/x-team/vaapi)
- * [`wp` Bash function](https://github.com/humanmade/Salty-WordPress/issues/16)
- * [WP Remote CLI](https://github.com/humanmade/wp-remote-cli/)
 
