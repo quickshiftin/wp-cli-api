@@ -1,10 +1,12 @@
 <?php
 /*
 Plugin Name: wp-cli-api
+Plugin URI: http://quickshiftin.com/software/wp-cli-api
+Version 1.0
+Author: quickshiftin
+Author URI: http://quickshiftin.com/about
 Description: Run wp command against this wordpress install over API.
-Author: Nathan Nobbe
-Author URI: http://moxune.com
-License: Copyright Moxune LLC
+License: GPLv3
 */
 
 $GLOBALS['xmlrpc_internalencoding'] = 'UTF-8';
