@@ -37,7 +37,7 @@ api:
     pass: api-pass
     url: 'http://staging.livesite.com'
 
-  deelopment:
+  development:
     user: api-user
     pass: api-pass
     url: 'http://livesite.local'
