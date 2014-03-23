@@ -1,33 +1,27 @@
 {
-	"name": "x-team/wp-cli-api",
-	"version": "0.2.0",
+	"name": "quickshiftin/wp-cli-api",
+	"version": "1.0.0",
 	"description": "Invoke WP-CLI on another server via API from local machine",
-	"homepage": "https://github.com/x-team/wp-cli-api",
+	"homepage": "https://github.com/quickshiftin/wp-cli-api",
 	"require": {
 		"wp-cli/wp-cli": ">=0.13"
 	},
-	"license": "GPLv2",
-	"keywords": ["wp-cli","api","remote"],
+	"license": "GPLv3",
+	"keywords": ["wp-cli","api","remote", "devops"],
 	"authors": [
 		{
-			"name": "Jonathan Bardo",
-			"email": "jonathan.bardo@x-team.com",
-			"homepage": "https://github.com/jonathanbardo",
+			"name": "Nathan Nobbe",
+			"email": "quickshiftin@gmail.com",
+			"homepage": "http://quickshiftin.com/software/wp-cli-api",
 			"role": "Developer"
 		},
-		{
-			"name": "Weston Ruter",
-			"email": "weston@x-team.com",
-			"homepage": "http://weston.ruter.net",
-			"role": "Developer"
-		}
 	],
 	"require": {
 		"php": ">=5.4"
 	},
 	"support": {
-		"issues": "https://github.com/x-team/wp-cli-api/issues",
-		"source": "https://github.com/x-team/wp-cli-api"
+		"issues": "https://github.com/quickshiftin/wp-cli-api/issues",
+		"source": "https://github.com/quickshiftin/wp-cli-api"
 	},
 	"autoload": {
 		"files": [ "wp-cli-api.php" ]
